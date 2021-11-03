@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -64,28 +63,28 @@ func main() {
 		c.JSON(http.StatusOK, data)
 	})
 	//---------------------------------------
-	// r.POST("/save", func(c *gin.Context) {
-	// 	var client Client
-	// 	var pic Pic
-	// 	err := c.BindJSON(&client)
-	// 	if err != nil {
-	// 		log.Printf("BindJson Error : %s", err.Error())
-	// 		return
-	// 	}
-	// 	pic = Pic{Name: client.Name, Picture: []byte(client.Picture)}
-	// 	err = DB.Create(&pic).Error
-	// 	if err != nil {
-	// 		log.Printf("Data Error : %s", err.Error())
-	// 		c.JSON(http.StatusOK, gin.H{
-	// 			"err": err.Error(),
-	// 		})
-	// 		return
-	// 	} else {
-	// 		c.JSON(http.StatusOK, gin.H{
-	// 			"name": pic.Name,
-	// 		})
-	// 	}
-	// })
+	r.POST("/save", func(c *gin.Context) {
+		var client Client
+		var pic Pic
+		err := c.BindJSON(&client)
+		if err != nil {
+			log.Printf("BindJson Error : %s", err.Error())
+			return
+		}
+		pic = Pic{Name: client.Name, Picture: []byte(client.Picture)}
+		err = DB.Create(&pic).Error
+		if err != nil {
+			log.Printf("Data Error : %s", err.Error())
+			c.JSON(http.StatusOK, gin.H{
+				"err": err.Error(),
+			})
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"name": pic.Name,
+			})
+		}
+	})
 	//----------------------------
 	r.GET("/get", func(c *gin.Context) {
 		var pics []Pic
@@ -99,28 +98,28 @@ func main() {
 		}
 	})
 	//----------------------------
-	r.GET("/getpage", func(c *gin.Context) {
-		DDB := DB
-		var pages []Pic
-		page, err := strconv.Atoi(c.Query("page"))
-		if err != nil {
-			log.Printf("Page Error %s: ", err.Error())
-			return
-		}
-		pageSize := 4
-		if page > 0 && pageSize > 0 {
-			DDB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-		}
-		err = DDB.Find(&pages).Error
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"Get Error": err.Error(),
-			})
-			return
-		} else {
-			c.JSON(http.StatusOK, pages)
-		}
-	})
+	// r.GET("/getpage", func(c *gin.Context) {
+	// 	DDB := DB
+	// 	var pages []Pic
+	// 	page, err := strconv.Atoi(c.Query("page"))
+	// 	if err != nil {
+	// 		log.Printf("Page Error %s: ", err.Error())
+	// 		return
+	// 	}
+	// 	pageSize := 4
+	// 	if page > 0 && pageSize > 0 {
+	// 		DDB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	// 	}
+	// 	err = DDB.Find(&pages).Error
+	// 	if err != nil {
+	// 		c.JSON(http.StatusOK, gin.H{
+	// 			"Get Error": err.Error(),
+	// 		})
+	// 		return
+	// 	} else {
+	// 		c.JSON(http.StatusOK, pages)
+	// 	}
+	// })
 	//----------------------------
 	r.POST("/getWho", func(c *gin.Context) {
 		var pic []Pic
@@ -211,5 +210,6 @@ func main() {
 	err = r.Run(":8080")
 	if err != nil {
 		log.Fatal("8080 err : ", err.Error())
+		return
 	}
 }
