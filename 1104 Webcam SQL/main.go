@@ -57,7 +57,7 @@ func (e MyError) Error() string {
 func main() {
 	err := InitMysql()
 	if err != nil {
-		log.Println("InitMysql() Run Error")
+		log.Printf("InitMysql() Run Error : %s", err.Error())
 		return
 	}
 	defer DB.Close()
@@ -66,7 +66,7 @@ func main() {
 	r.GET("/take", func(c *gin.Context) {
 		webcam, err := gocv.VideoCaptureDevice(0)
 		if err != nil {
-			log.Printf("VideoCaptureDevice Error %s:", err.Error())
+			log.Printf("VideoCaptureDevice Error : %s", err.Error())
 			c.JSON(http.StatusOK, Err)
 			return
 		}
@@ -78,7 +78,7 @@ func main() {
 		defer webcam.Close()
 		buf, err := gocv.IMEncode(".jpg", img)
 		if err != nil {
-			log.Printf("Gocv Encode Error %s:", err.Error())
+			log.Printf("Gocv Encode Error : %s", err.Error())
 			c.JSON(http.StatusOK, ServerErr)
 			return
 		}
@@ -152,7 +152,7 @@ func main() {
 		var client Client
 		err = c.BindJSON(&client)
 		if err != nil {
-			log.Printf("BindJSON %s: ", err.Error())
+			log.Printf("BindJSON : %s", err.Error())
 			c.JSON(http.StatusOK, Err)
 			return
 		}
