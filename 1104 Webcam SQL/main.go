@@ -96,16 +96,19 @@ func main() {
 			log.Printf("BindJson Error : %s", err.Error())
 			c.JSON(http.StatusOK, Err)
 		}
-		pic = Pic{Name: client.Name, Picture: []byte(client.Picture)}
-		err = DB.Create(&pic).Error
-		if err != nil {
-			log.Printf("Data Error : %s", err.Error())
-			c.JSON(http.StatusOK, ServerErr)
-			return
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"name": pic.Name,
-			})
+		p := client.Picture
+		if p != nil {
+			pic = Pic{Name: client.Name, Picture: []byte(client.Picture)}
+			err = DB.Create(&pic).Error
+			if err != nil {
+				log.Printf("Data Error : %s", err.Error())
+				c.JSON(http.StatusOK, ServerErr)
+				return
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"name": pic.Name,
+				})
+			}
 		}
 	})
 	//----------------------------
