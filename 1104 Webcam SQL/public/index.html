@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebCam</title>
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script> -->
+  <script src="/index.js"></script>
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+<div class="header">
+  <h2>WebCam</h2>
+  <button onclick="take()"  value=''>拍照</button>
+  <button onclick="insert()"  value=''>存擋</button>
+  <button onclick="select()"  value=''>查詢全部</button>
+  <input id="select" type="text"  placeholder="請輸入要查詢的名稱">
+  <button onclick="selectOne()"  value=''>個別查詢</button><br>
+  <img id="img" style="width: 400px;" src="" alt="">
+  <div>
+    <table class="table table-striped table-hover"  id="myData">
+      <tr id="fs" style="display:none;">
+        <th>姓名</th>
+        <th>照片</th>
+        <th colspan="2">操作</th>
+      </tr>
+    </table>
+  </div>
+  
+</div>
+
+</body>
+</html>
