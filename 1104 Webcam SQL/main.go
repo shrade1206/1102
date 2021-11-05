@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,11 +26,26 @@ type Client struct {
 }
 
 type MyError struct {
-	Time   time.Time `json:"time"`
-	Reason string    `json:"reason"`
+	Time         time.Time `json:"time"`
+	BackEndError string    `json:"reason"`
+}
+
+type API_Error struct {
+	Code int
+	Msg  string
+	Data interface{}
+}
+
+const Code_Param_Invalid = 1
+const Code_DB_Conn = 2
+
+type CliendError struct {
+	Time      time.Time `json:"time"`
+	DataError string    `json:"reason"`
 }
 
 var (
+	pics     []Pic
 	newImg   []byte
 	data     string
 	t1       = time.Now().Year()
@@ -39,20 +55,23 @@ var (
 	t5       = time.Now().Minute()
 	timedata = time.Date(t1, t2, t3, t4, t5, 0, 0, time.Local)
 
-	Err = MyError{
-		Time:   timedata,
-		Reason: "連線正常，但Cliend Data有誤",
+	Err = CliendError{
+		Time:      timedata,
+		DataError: "連線正常，但Cliend Data有誤",
 	}
 
 	ServerErr = MyError{
-		Time:   timedata,
-		Reason: "連線正常，但Server異常",
+		Time:         timedata,
+		BackEndError: "連線正常，但Server異常",
 	}
 )
 
-func (e MyError) Error() string {
-	return fmt.Sprintf("At %v, %s", e.Time, e.Reason)
-}
+// func (e MyError) Error() string {
+// 	return fmt.Sprintf("At %v, %s", e.Time, e.BackEndError)
+// }
+// func (e CliendError) Error() string {
+// 	return fmt.Sprintf("At %v, %s", e.Time, e.DataError)
+// }
 
 func main() {
 	err := InitMysql()
@@ -95,6 +114,7 @@ func main() {
 		if err != nil {
 			log.Printf("BindJson Error : %s", err.Error())
 			c.JSON(http.StatusOK, Err)
+			return
 		}
 		p := client.Picture
 		if p != nil {
@@ -113,39 +133,57 @@ func main() {
 	})
 	//----------------------------
 	r.GET("/get", func(c *gin.Context) {
-		var pics []Pic
 		err := DB.Find(&pics).Error
 		if err != nil {
 			log.Printf("Find All Error : %s", err.Error())
-			c.JSON(http.StatusOK, ServerErr)
+			c.JSON(http.StatusOK, API_Error{
+				Code: Code_DB_Conn,
+				Msg:  "Query Data" + err.Error(),
+			})
 			return
 		} else {
-			c.JSON(http.StatusOK, pics)
+			c.JSON(http.StatusOK, API_Error{
+				Msg:  "OK",
+				Data: pics,
+			})
+			// c.JSON(http.StatusOK, pics)
 		}
 	})
 	//----------------------------
-	// r.GET("/getpage", func(c *gin.Context) {
-	// 	DDB := DB
-	// 	var pages []Pic
-	// 	page, err := strconv.Atoi(c.Query("page"))
-	// 	if err != nil {
-	// 		log.Printf("Page Error %s: ", err.Error())
-	// 		return
-	// 	}
-	// 	pageSize := 4
-	// 	if page > 0 && pageSize > 0 {
-	// 		DDB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	// 	}
-	// 	err = DDB.Find(&pages).Error
-	// 	if err != nil {
-	// 		c.JSON(http.StatusOK, gin.H{
-	// 			"Get Error": err.Error(),
-	// 		})
-	// 		return
-	// 	} else {
-	// 		c.JSON(http.StatusOK, pages)
-	// 	}
-	// })
+	r.GET("/pagedata", func(c *gin.Context) {
+		DDB := DB
+		var total int
+		var pics []Pic
+		page, err := strconv.Atoi(c.Query("page"))
+		if err != nil {
+			log.Printf("Page Error %s: ", err.Error())
+			c.JSON(http.StatusOK, Err)
+			return
+		}
+		pageSize := 4
+		if page <= 0 {
+			page = 1
+		}
+		err = DDB.Find(&pics).Count(&total).Error
+		if err != nil {
+			c.JSON(http.StatusOK, ServerErr)
+		}
+		pageNum := total / pageSize
+		if total%pageSize != 0 {
+			pageNum++
+		}
+		DDB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+		err = DDB.Find(&pics).Error
+		if err != nil {
+			c.JSON(http.StatusOK, ServerErr)
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"pics":      pics,
+				"total":     total,
+				"totalPage": pageNum,
+			})
+		}
+	})
 	//----------------------------
 	r.POST("/getWho", func(c *gin.Context) {
 		var pic []Pic
@@ -167,6 +205,7 @@ func main() {
 	})
 	//---------------------------------------
 	r.PUT("/put/:id", func(c *gin.Context) {
+		var client Client
 		var pic Pic
 		id, ok := c.Params.Get("id")
 		if !ok {
@@ -178,12 +217,13 @@ func main() {
 			c.JSON(http.StatusOK, Err)
 			return
 		}
-		err = c.BindJSON(&pic)
+		err = c.BindJSON(&client)
 		if err != nil {
 			log.Printf("BindJson Error : %s", err.Error())
 			c.JSON(http.StatusOK, Err)
 			return
 		}
+		pic = Pic{Id: client.Id, Name: client.Name, Picture: []byte(client.Picture)}
 		err = DB.Save(&pic).Error
 		if err != nil {
 			c.JSON(http.StatusOK, Err)

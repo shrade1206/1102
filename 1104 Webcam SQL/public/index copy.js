@@ -75,8 +75,6 @@ function select(){
 }
 }
 
-
-
 function again(e){
     const uri = 'http://127.0.0.1:8080/take';
     const initDetails = {
