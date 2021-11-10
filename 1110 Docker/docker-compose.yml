@@ -1,0 +1,42 @@
+version: "3.7"
+
+services : 
+  mysql:
+    image: mysql:5.7.36
+    container_name: "mysql"
+    port:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=todolist
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=Larry
+      - MYSQL_PASSWORD=root
+    volumes:
+      - ./mysql/initdb:/docker-entrypoint-initdb.d #初始化資料表
+      - ./mysql/datadir:/var/lib/mysql             #指定資料庫儲存位置
+      - ./mysql/my.cnf:/ect/mysql/conf.d/my.cnf    #MySQL設定
+    # restart: always
+
+    phpmyadmin:
+      image: phpmyadmin
+      container_name: web_phpmyadmin
+      ports:
+        - 8081:80
+      enviroment:
+        - PMA_HOST=mysql
+      #  - PMA_ARBITRARY=1
+      #  - PMA_USER=root
+      #  - PMA_PASSWORD=root
+      depends_on:
+        - mysql
+      # restart: always
+    # todo_list:
+    #   container_name: "mysql"
+    #   build:
+    #     dockerfile: ./1101_TODO_LIST/Dockerfile
+    #   # command: sh -c "./wait-for.sh mysql8019:3306 -- ./bubble ./conf/config.ini"
+    #   depends_on:
+    #     - mysql
+    #   ports:
+    #     - "8080:8080"
