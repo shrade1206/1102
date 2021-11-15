@@ -37,5 +37,6 @@ docker-compose restart (compose 設定的 name)
 docker image prune -f -a (-f代表不用確認(Y/N) 刪除所有沒使用的image)
 
 docker build -f ./mysql/db.Dockerfile -t (imageName) . (.代表執行工作區，務必確認Dockerfile的執行地點)
+
 			這裡的-f 是檔案位置
 -h 可以得到詳細說明
