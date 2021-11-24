@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: app
+  template:
+    metadata:
+      labels:
+        name: app
+    spec:
+      containers:
+        - image: shrade1206/todo:latest
+          # imagePullPolicy: IfNotPresent (如果已經有image就不會再抓) latest預設會是Alway
+          name: app
+          ports:
+            - containerPort: 8080
+              name: api
+          resources:
+      restartPolicy: Always

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pma
+spec:
+  selector:
+    matchLabels:
+      app: pma
+  template:
+    metadata:
+      labels:
+        app: pma
+    spec:
+      containers:
+      - name: myapp
+        image: phpmyadmin:lastest
+        ports:
+        - containerPort: 80
+        env:
+          - name: PMA_HOST
+            value: mysql
+          - name: PMA_PORT
+            value: "3306"
+          - name: PMA_USER
+            valueFrom:
+              secretRef:
+              name: mysql-secret
+              key: rootName
+          - name: PMA_PASSWORD
+            valueFrom:
+              secretRef:
+              name: mysql-secret
+              key: rootPw
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pma-service
+spec:
+  type: NodePort
+  selector:
+    app: pma
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30800
+

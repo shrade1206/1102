@@ -1,0 +1,48 @@
+version: "3.8"
+
+services : 
+  mysql:
+    # container_name: "mysqltest"
+    image: img-mysql # 如果本身沒image，但有設定build，會直接使用這個image名字
+    build:
+      context: .
+      dockerfile: ./Docker/db.Dockerfile
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: todolist
+    command: 
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - xxx:/var/lib/mysql   # Docker暫存區，設定好下面的xxx之後，會自動生成一個存資料的地方，如果沒有設定，每次資料都不會紀錄
+      - ./mysql/my.cnf:/ect/mysql/conf.d/my.cnf
+    restart: unless-stopped
+  phpmyadmin:
+    # container_name: "pmatest"
+    image: phpmyadmin
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      # PMA_ARBITRARY: 1
+    ports:
+      - 8081:80
+    restart: unless-stopped
+  app:
+    # container_name: "todotest"
+    image: img-todo # 如果本身沒image，但有設定build，會直接使用這個image名字
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile # -f
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    # tty: true 啟動結束時，一樣在運作，不會進exit 0，看情況使用，要記得
+    restart: unless-stopped
+
+volumes: # Docker暫存區，資料夾名字隨意取，請往19行查看
+  xxx: 
